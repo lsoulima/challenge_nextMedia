@@ -18,14 +18,14 @@ class ProductController extends Controller
     public function index(Request $request)
     {
         $this->validate($request,[ //inputs are not empty or null
-            'sort_by' => ['nullable', Rule::in(['name', 'price'])],
+            'sort_by' => ['nullable', Rule::in(['created_at', 'name', 'price'])],
             'sort_direction' => ['nullable', Rule::in(['asc', 'desc'])],
         ]);
 
         $sort_by = $request->query('sort_by', 'created_at');
         $sort_direction = $request->query('sort_direction', 'asc');
         
-        return Product::orderBy($sort_by, $sort_direction)->paginate(5);;
+        return Product::orderBy($sort_by, $sort_direction)->paginate(5);
     }
 
     /**

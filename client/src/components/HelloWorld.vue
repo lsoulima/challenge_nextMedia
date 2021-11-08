@@ -2,19 +2,7 @@
   <div class="hello">
     <Listing />
 
-    <SfBottomNavigation>
-      <SfBottomNavigationItem
-        icon="menu"
-        :isActive="false"
-        iconActive="menu"
-        label="Products Listing"
-        iconSize="20px"
-      />
-      <SfModal
-      label="Create Product"
-      :visible="openModal"
-      @close="toggleModal"
-      >
+    <SfModal label="Create Product" :visible="openModal" @close="toggleModal">
       <transition name="sf-fade" mode="out-in">
         <div>
           <form class="form" @submit.prevent="() => false">
@@ -54,11 +42,30 @@
           </form>
         </div>
       </transition>
-      </SfModal>
-      <SfBottomNavigationItem 
+    </SfModal>
+
+    <SfBottomNavigation>
+      <SfBottomNavigationItem
+        icon=""
+        :isActive="false"
+        iconActive=""
+        label=""
+        iconSize="20px"
+      />
+      <SfBottomNavigationItem
+        icon="menu"
+        :isActive="false"
+        iconActive="menu"
+        label="Products Listing"
+        iconSize="20px"
+      />
+      <SfBottomNavigationItem
         class="open-button"
         data-testid="open-modal-button"
-        @click="toggleModal" icon="plus" label="Add Product" isFloating="" 
+        @click="toggleModal"
+        icon="plus"
+        label="Add Product"
+        isFloating=""
       />
     </SfBottomNavigation>
   </div>
@@ -66,11 +73,12 @@
 
 <script>
 import Listing from "./screens/Listing";
-import { 
+import {
   SfBottomNavigation,
   SfModal,
   SfInput,
-  SfButton } from "@storefront-ui/vue";
+  SfButton,
+} from "@storefront-ui/vue";
 
 export default {
   name: "HelloWorld",
@@ -82,9 +90,9 @@ export default {
     SfBottomNavigation,
     SfModal,
     SfInput,
-    SfButton
+    SfButton,
   },
-    data() {
+  data() {
     return {
       name: "",
       description: "",

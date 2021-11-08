@@ -17,7 +17,11 @@
         </SfButton>
         <div class="navbar__sort desktop-only">
           <span class="navbar__label">Sort by:</span>
-          <SfComponentSelect v-model="sortBy" class="navbar__select">
+          <SfComponentSelect
+            v-model="sortBy"
+            class="navbar__select"
+            @change="getData"
+          >
             <SfComponentSelectOption
               v-for="option in sortByOptions"
               :key="option.value"
@@ -29,7 +33,7 @@
         </div>
         <div class="navbar__counter">
           <span class="navbar__label desktop-only">Products found: </span>
-          <span class="desktop-only">280</span>
+          <span class="desktop-only">{{ total_products }}</span>
           <span class="navbar__label smartphone-only">280 Items</span>
         </div>
       </div>
@@ -40,22 +44,24 @@
           v-for="(product, i) in products"
           :key="product.id"
           :style="{ '--index': i }"
-          :title="product.title"
+          :title="product.name"
           :description="product.description"
-          :image="product.image"
-          :regular-price="product.price"
+          :image="`http://localhost:8000/storage/uploads/${product.image}`"
+          :regular-price="`${product.price} $`"
           :qty="false"
           class="products__product-card-horizontal"
         >
         </SfProductCardHorizontal>
+
         <SfPagination
           class="products__pagination"
           :current="currentPage"
-          :total="4"
+          :total="last_page"
           :visible="5"
           @click="
             (page) => {
               currentPage = page;
+              getData();
             }
           "
         />
@@ -74,10 +80,9 @@
           class="filters__title sf-heading--left"
         />
         <SfFilter
-          v-for="filter in filters.collection"
+          v-for="filter in filters.categories"
           :key="filter.value"
           :label="filter.label"
-          :count="filter.count"
           :selected="filter.selected"
           class="filters__item"
           @change="filter.selected = !filter.selected"
@@ -111,7 +116,7 @@ import {
   SfComponentSelect,
 } from "@storefront-ui/vue";
 
-import SfProductCardHorizontal from '../UI/SfProductCardHorizontal.vue';
+import SfProductCardHorizontal from "../UI/SfProductCardHorizontal.vue";
 
 export default {
   name: "Listing",
@@ -128,140 +133,42 @@ export default {
   data() {
     return {
       currentPage: 1,
-      sortBy: "Latest",
+      last_page: 1,
+      total_products: 0,
+      sortBy: "created_at,asc",
       isFilterSidebarOpen: false,
       isGridView: false,
       category: "Clothing",
-      displayOnPage: "40",
       sortByOptions: [
         {
-          value: "Latest",
+          value: "created_at,asc",
           label: "Latest",
         },
         {
-          value: "Oldest",
+          value: "created_at,desc",
           label: "Oldest",
         },
         {
-          value: "Name-up",
+          value: "name,asc",
           label: "Name A - Z",
         },
         {
-          value: "Name-down",
+          value: "name,desc",
           label: "Name Z - A",
         },
         {
-          value: "Price-up",
+          value: "price,asc",
           label: "Price low to high",
         },
         {
-          value: "Price-down",
+          value: "price,desc",
           label: "Price high to low",
         },
       ],
-      products: [
-        {
-          id: 1,
-          title: "Cream Beach Bag",
-          description:
-            "Find stunning women cocktail and party dresses. Stand out in lace and metallic cocktail dresses and party dresses from all your favorite brands.",
-          image: "assets/storybook/Home/productA.jpg",
-          price: "$50.00",
-          add: false
-        },
-        {
-          id: 2,
-          title: "Cream Beach Bag",
-          description:
-            "Find stunning women cocktail and party dresses. Stand out in lace and metallic cocktail dresses and party dresses from all your favorite brands.",
-          image: "assets/storybook/Home/productA.jpg",
-          price: "$50.00"
-        },
-        {
-          id: 3,
-          title: "Cream Beach Bag",
-          description:
-            "Find stunning women cocktail and party dresses. Stand out in lace and metallic cocktail dresses and party dresses from all your favorite brands.",
-          image: "assets/storybook/Home/productC.jpg",
-          price: "$50.00"
-        },
-        {
-          id: 4,
-          title: "Cream Beach Bag",
-          description:
-            "Find stunning women cocktail and party dresses. Stand out in lace and metallic cocktail dresses and party dresses from all your favorite brands.",
-          image: "assets/storybook/Home/productA.jpg",
-          price: "$50.00"
-        },
-        {
-          id: 5,
-          title: "Cream Beach Bag",
-          description:
-            "Find stunning women cocktail and party dresses. Stand out in lace and metallic cocktail dresses and party dresses from all your favorite brands.",
-          image: "assets/storybook/Home/productB.jpg",
-          price: "$50.00"
-        },
-        {
-          id: 6,
-          title: "Cream Beach Bag",
-          description:
-            "Find stunning women cocktail and party dresses. Stand out in lace and metallic cocktail dresses and party dresses from all your favorite brands.",
-          image: "assets/storybook/Home/productC.jpg",
-          price: "$50.00"
-        },
-        {
-          id: 7,
-          title: "Cream Beach Bag",
-          description:
-            "Find stunning women cocktail and party dresses. Stand out in lace and metallic cocktail dresses and party dresses from all your favorite brands.",
-          image: "assets/storybook/Home/productA.jpg",
-          price: "$50.00"
-        },
-        {
-          id: 8,
-          title: "Cream Beach Bag",
-          description:
-            "Find stunning women cocktail and party dresses. Stand out in lace and metallic cocktail dresses and party dresses from all your favorite brands.",
-          image: "assets/storybook/Home/productB.jpg",
-          price: "$50.00"
-        },
-      ],
+      products: [],
       filters: {
-        collection: [
-          {
-            label: "Summer fly",
-            value: "summer-fly",
-            count: "10",
-            selected: false,
-          },
-          {
-            label: "Best 2018",
-            value: "best-2018",
-            count: "23",
-            selected: false,
-          },
-          {
-            label: "Your choice",
-            value: "your-choice",
-            count: "54",
-            selected: false,
-          },
-        ],
+        categories: [],
       },
-      breadcrumbs: [
-        {
-          text: "Home",
-          route: {
-            link: "#",
-          },
-        },
-        {
-          text: "Women",
-          route: {
-            link: "#",
-          },
-        },
-      ],
     };
   },
   methods: {
@@ -274,9 +181,47 @@ export default {
         });
       });
     },
-    toggleWishlist(index) {
-      this.products[index].isInWishlist = !this.products[index].isInWishlist;
+    async getCategories() {
+      try {
+        const response = await this.$http.get(
+          `http://localhost:8000/api/categories`
+        );
+        // JSON responses are automatically parsed.
+        console.log(response.data, "test");
+        if (response.data) {
+          const apiCategories = response.data;
+          for (const category of apiCategories)
+            this.filters.categories.push({
+              label: category.name,
+              value: category.id,
+              selected: false,
+            });
+          console.log(this.filters.categories, 'tet');
+        }
+      } catch (error) {
+        console.log(error);
+      }
     },
+    async getData() {
+      const sortConfig = this.sortBy.split(",");
+      try {
+        const response = await this.$http.get(
+          `http://127.0.0.1:8000/api/products?page=${this.currentPage}&sort_by=${sortConfig[0]}&sort_direction=${sortConfig[1]}`
+        );
+        // JSON responses are automatically parsed.
+        const apiData = response.data;
+        this.products = apiData.data;
+        this.total_products = apiData.total;
+        this.last_page = apiData.last_page;
+        console.log(response.data, "test");
+      } catch (error) {
+        console.log(error);
+      }
+    },
+  },
+  created() {
+    this.getCategories();
+    this.getData();
   },
 };
 </script>
@@ -289,6 +234,7 @@ export default {
     margin: 0 auto;
   }
 }
+
 .main {
   &.section {
     padding: var(--spacer-xs);
@@ -458,6 +404,7 @@ export default {
   box-sizing: border-box;
   flex: 1;
   margin: 0;
+  padding-bottom: 70px;
   &__grid,
   &__list {
     display: flex;
@@ -506,11 +453,12 @@ export default {
     display: flex;
     justify-content: center;
     margin: var(--spacer-base) 0;
+    margin-bottom: 70px;
   }
   @include for-desktop {
     margin: var(--spacer-sm) 0 0 var(--spacer-sm);
     &__pagination {
-      justify-content: flex-start;
+      justify-content: center;
       margin: var(--spacer-xl) 0 0 0;
     }
     &__product-card-horizontal {
