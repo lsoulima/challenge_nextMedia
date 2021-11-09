@@ -1,13 +1,9 @@
 <template>
   <div>
-      <SfModal
-      label="Create Product"
-      :visible="openModal"
-      @close="toggleModal"
-      >
+    <SfModal label="Create Product" :visible="openModal" @close="toggleModal">
       <transition name="sf-fade" mode="out-in">
         <div>
-          <form class="form" @submit.prevent="() => false">
+          <form class="form" v-on:submit.prevent="addProduct">
             <SfInput
               v-model="name"
               name="name"
@@ -15,25 +11,19 @@
               class="form__element"
             />
             <SfInput
-              v-model="lastName"
-              name="last-name"
+              v-model="description"
+              name="description"
               label="Description"
               class="form__element"
             />
             <SfInput
-              v-model="email"
-              name="email"
+              v-model="price"
+              name="price"
               label="Price"
               class="form__element"
-              type="email"
+              type="number"
             />
-            <SfInput
-              v-model="password"
-              name="password"
-              label="Image"
-              type="file"
-              class="form__element"
-            />
+            <input type="file" name="image" id="image" @change="handleFileUpload( $event )" />
             <SfButton
               type="submit"
               class="sf-button--full-width form__submit"
@@ -44,39 +34,66 @@
           </form>
         </div>
       </transition>
-      </SfModal>
+    </SfModal>
   </div>
 </template>
 
 <script>
-import {
-  SfModal,
-  SfInput,
-  SfButton
-} from "@storefront-ui/vue";
+import { SfModal, SfInput, SfButton } from "@storefront-ui/vue";
 export default {
-  name: "Login",
+  name: "AddProduct",
   components: {
     SfModal,
     SfInput,
-    SfButton
+    SfButton,
   },
   data() {
     return {
-      isLogIn: true,
-      email: "",
-      password: "",
-      createAccount: false,
-      rememberMe: false,
-      firstName: "",
-      lastName: "",
-      openModal: false,
+      name: "",
+      description: "",
+      price: null,
+      image: null,
+      openModal: true,
     };
   },
   methods: {
     toggleModal() {
       this.openModal = !this.openModal;
     },
+    handleFileUpload(event) {
+      this.image = event.target.files[0];
+      console.log(this.image, 'image');
+    },
+    async addProduct() {
+      try {
+
+        const formData = new FormData();
+        formData.append('name', this.name);
+        formData.append('description', this.description);
+        formData.append('price', this.price);
+        formData.append('image', this.image);
+
+        const response = await this.$http.post(
+          "http://localhost:8000/api/products",
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+        if (response.status == 201)
+        {
+          this.toggleModal();
+          this.$emit('new-product');
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    },
+  },
+  created() {
+    this.addProduct();
   },
 };
 </script>

@@ -67,6 +67,32 @@
         />
       </div>
     </div>
+    <AddProduct v-if="openModal" v-on:new-product="getData" />
+
+    <SfBottomNavigation>
+      <SfBottomNavigationItem
+        icon=""
+        :isActive="false"
+        iconActive=""
+        label=""
+        iconSize="20px"
+      />
+      <SfBottomNavigationItem
+        icon="menu"
+        :isActive="false"
+        iconActive="menu"
+        label="Products Listing"
+        iconSize="20px"
+      />
+      <SfBottomNavigationItem
+        class="open-button"
+        data-testid="open-modal-button"
+        @click="toggleModal"
+        icon="plus"
+        label="Add Product"
+        isFloating=""
+      />
+    </SfBottomNavigation>
     <SfSidebar
       :visible="isFilterSidebarOpen"
       title="Filters"
@@ -106,6 +132,7 @@
   </div>
 </template>
 <script>
+import AddProduct from "./AddProduct";
 import {
   SfHeading,
   SfSidebar,
@@ -114,6 +141,7 @@ import {
   SfFilter,
   SfPagination,
   SfComponentSelect,
+  SfBottomNavigation,
 } from "@storefront-ui/vue";
 
 import SfProductCardHorizontal from "../UI/SfProductCardHorizontal.vue";
@@ -129,23 +157,25 @@ export default {
     SfProductCardHorizontal,
     SfPagination,
     SfComponentSelect,
+    AddProduct,
+    SfBottomNavigation,
   },
   data() {
     return {
       currentPage: 1,
       last_page: 1,
       total_products: 0,
-      sortBy: "created_at,asc",
+      sortBy: "created_at,desc",
       isFilterSidebarOpen: false,
       isGridView: false,
-      category: "Clothing",
+      openModal: false,
       sortByOptions: [
         {
-          value: "created_at,asc",
+          value: "created_at,desc",
           label: "Latest",
         },
         {
-          value: "created_at,desc",
+          value: "created_at,asc",
           label: "Oldest",
         },
         {
@@ -172,6 +202,9 @@ export default {
     };
   },
   methods: {
+    toggleModal() {
+      this.openModal = !this.openModal;
+    },
     clearAllFilters() {
       const filters = Object.keys(this.filters);
       filters.forEach((name) => {
@@ -187,7 +220,6 @@ export default {
           `http://localhost:8000/api/categories`
         );
         // JSON responses are automatically parsed.
-        console.log(response.data, "test");
         if (response.data) {
           const apiCategories = response.data;
           for (const category of apiCategories)
@@ -196,7 +228,6 @@ export default {
               value: category.id,
               selected: false,
             });
-          console.log(this.filters.categories, 'tet');
         }
       } catch (error) {
         console.log(error);
@@ -227,6 +258,7 @@ export default {
 </script>
 <style lang="scss" scoped>
 @import "~@storefront-ui/vue/styles";
+@import "../UI/styles/AddProduct.scss";
 #category {
   box-sizing: border-box;
   @include for-desktop {
